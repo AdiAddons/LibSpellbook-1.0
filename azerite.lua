@@ -96,8 +96,8 @@ end
 local function ScanAzeriteSpells(event)
 	local changed = false
 	for slot in next, azeriteSlots do
-		-- TODO: account for empty slots
-		changed = ScanEquipmentSlot(event, slot) or changed
+		local isEmpty = not GetInventoryItemID('player', slot)
+		changed = ScanEquipmentSlot(event, slot, isEmpty) or changed
 	end
 
 	if changed then
