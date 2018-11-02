@@ -5,6 +5,13 @@ local lib = ns.lib
 local FoundSpell = ns.FoundSpell
 local CleanUp    = ns.CleanUp
 
+local supportedBookTypes = {
+	spell  = true,
+	pet    = true,
+	talent = true,
+	pvp    = true,
+}
+
 -- ScanRanks
 
 local function ScanFlyout(flyoutId, bookType)
@@ -114,8 +121,7 @@ local function ScanSpells()
 		if generation < current then
 			changed = true
 			local bookType = ns.spells.book[id]
-			-- TODO: modules should be independent (should remove azerite)
-			if bookType ~= 'azerite' and (not inCombat or bookType ~= 'talent') then
+			if supportedBookTypes[bookType] and (not inCombat or bookType ~= 'talent') then
 				CleanUp(id)
 			end
 		end
