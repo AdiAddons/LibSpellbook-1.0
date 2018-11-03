@@ -74,7 +74,7 @@ local function ScanAzeriteItem(event, itemLocation)
 	return changed
 end
 
-local function ScanEquipmentSlot(event, slot, isEmpty)
+local function ScanEquipmentSlot(event, slot, isEmpty, suppressAllChangedMessage)
 	local changed = false
 
 	if azeriteSlots[slot] then
@@ -90,6 +90,10 @@ local function ScanEquipmentSlot(event, slot, isEmpty)
 		end
 	end
 
+	if changed and not suppressAllChangedMessage then
+		lib.callbacks:Fire('LibSpellbook_Spells_Changed')
+	end
+
 	return changed
 end
 
@@ -97,7 +101,7 @@ local function ScanAzeriteSpells(event)
 	local changed = false
 	for slot in next, azeriteSlots do
 		local isEmpty = not GetInventoryItemID('player', slot)
-		changed = ScanEquipmentSlot(event, slot, isEmpty) or changed
+		changed = ScanEquipmentSlot(event, slot, isEmpty, true) or changed
 	end
 
 	if changed then
