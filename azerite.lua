@@ -12,81 +12,93 @@ local azeriteSlots = {
 
 -- azeriteSpells[spellID] = '135' -- slots concatenated
 local azeriteSpells = {}
+local playerSpecID
 
-local function CleanCache(slot)
-	local changed = false
-	for spellId, slots in next, azeriteSpells do
-		slots = slots:gsub(slot, '')
-		if slots == '' then
-			azeriteSpells[spellId] = nil
-			CleanUp(spellId)
-			changed = true
-		else
-			azeriteSpells[spellId] = slots
+local function RemoveSpell(slot, id)
+	local spellRemoved = false
+
+	for spell, slots in next, azeriteSpells do
+		if not id or id == spell then
+			slots = slots:gsub(slot, '')
+			if slots == '' then
+				azeriteSpells[spell] = nil
+				CleanUp(spell)
+				spellRemoved = true
+			else
+				azeriteSpells[spell] = slots
+			end
+
+			if id == spell then break end
 		end
 	end
 
-	return changed
+	return spellRemoved
 end
 
-local function GetSelectedPowers(itemLocation)
-	local powers = {}
+local function AddSpell(slot, id)
+	local isNew = false
+	local slots = azeriteSpells[id]
+
+	if slots then
+		if not slots:find(slot) then
+			azeriteSpells[id] = slots .. slot
+		end
+	else
+		azeriteSpells[id] = tostring(slot)
+		isNew = FoundSpell(id, GetSpellInfo(id), 'azerite')
+	end
+
+	return isNew
+end
+
+local function UpdateActivePowers(itemLocation)
+	local changed = false
 	local azeriteLevel = C_AzeriteItem.GetPowerLevel(C_AzeriteItem.FindActiveAzeriteItem())
 	local tiers = C_AzeriteEmpoweredItem.GetAllTierInfo(itemLocation)
 
 	for tier, info in next, tiers do
-		-- the last tier is just increasing the item level
 		if tier < #tiers and info.unlockLevel <= azeriteLevel then
 			for _, powerID in next, info.azeritePowerIDs do
-				if C_AzeriteEmpoweredItem.IsPowerSelected(itemLocation, powerID) then
-					powers[powerID] = true
+				local spellID = C_AzeriteEmpoweredItem.GetPowerInfo(powerID).spellID
+				local slot = itemLocation:GetEquipmentSlot()
+
+				if C_AzeriteEmpoweredItem.IsPowerSelected(itemLocation, powerID)
+						and C_AzeriteEmpoweredItem.IsPowerAvailableForSpec(powerID, playerSpecID) then
+					changed = AddSpell(slot, spellID) or changed
+				else
+					changed = RemoveSpell(slot, spellID) or changed
 				end
 			end
 		end
 	end
 
-	return powers
+	return changed
 end
 
 local function ScanAzeriteItem(event, itemLocation)
-	local changed = false
-
 	if not itemLocation:IsEquipmentSlot() then
-		return changed
+		return false
 	end
 
-	local powers = GetSelectedPowers(itemLocation)
-
-	for powerId in next, powers do
-		local spellId = C_AzeriteEmpoweredItem.GetPowerInfo(powerId).spellID
-		local slots = azeriteSpells[spellId]
-		local slot = itemLocation:GetEquipmentSlot()
-		if slots then
-			if not slots:find(slot) then
-				azeriteSpells[spellId] = slots .. slot
-			end
-		else
-			azeriteSpells[spellId] = tostring(slot)
-			changed = FoundSpell(spellId, GetSpellInfo(spellId), 'azerite') or changed
-		end
-	end
-
-	return changed
+	return UpdateActivePowers(itemLocation)
 end
 
 local function ScanEquipmentSlot(event, slot, isEmpty, suppressAllChangedMessage)
 	local changed = false
 
 	if azeriteSlots[slot] then
-		if isEmpty then
-			changed = CleanCache(slot) or changed
-			return changed
+		local itemLink = GetInventoryItemLink('player', slot)
+		if isEmpty or itemLink ~= azeriteSlots[slot] then
+			azeriteSlots[slot] = itemLink or true
+			changed = RemoveSpell(slot)
 		end
 
-		local itemLocation = ItemLocation:CreateFromEquipmentSlot(slot)
-		local isAzeriteItem = C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(itemLocation)
-		if isAzeriteItem then
-			changed = ScanAzeriteItem(event, itemLocation) or changed
+		if not isEmpty then
+			local itemLocation = ItemLocation:CreateFromEquipmentSlot(slot)
+			local isAzeriteItem = C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(itemLocation)
+			if isAzeriteItem then
+				changed = ScanAzeriteItem(event, itemLocation) or changed
+			end
 		end
 	end
 
@@ -98,6 +110,11 @@ local function ScanEquipmentSlot(event, slot, isEmpty, suppressAllChangedMessage
 end
 
 local function ScanAzeriteSpells(event)
+	if not playerSpecID or event == 'PLAYER_TALENT_UPDATE' then
+		playerSpecID = GetSpecializationInfo(GetSpecialization()) or 0
+		if playerSpecID == 0 then return end
+	end
+
 	local changed = false
 	for slot in next, azeriteSlots do
 		local isEmpty = not GetInventoryItemID('player', slot)
@@ -113,6 +130,7 @@ local function ScanAzeriteSpells(event)
 	end
 end
 
-lib:RegisterEvent('PLAYER_EQUIPMENT_CHANGED', ScanEquipmentSlot)
 lib:RegisterEvent('AZERITE_EMPOWERED_ITEM_SELECTION_UPDATED', ScanAzeriteItem)
 lib:RegisterEvent('PLAYER_ENTERING_WORLD', ScanAzeriteSpells)
+lib:RegisterEvent('PLAYER_EQUIPMENT_CHANGED', ScanEquipmentSlot)
+lib:RegisterEvent('PLAYER_TALENT_UPDATE', ScanAzeriteSpells)
