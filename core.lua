@@ -50,25 +50,37 @@ ns.generation = 0
 -- @function LibSpellbook:RegisterEvent
 -- @param  string    the event for which the handler is to be registered
 -- @param  function  the event handler
-function lib:RegisterEvent(event, handler)
+-- @param  boolean   indicates if the event should be registered for the player only
+function lib:RegisterEvent(event, handler, isUnitEvent)
 	if type(handler) ~= 'function' then
 		error(('Attempted to register event [%s] with a non-function handler.'):format(event))
 	end
 
-	local current = self.events[event]
+	local events = self.events
+	local current = events[event]
+
 	if not current then
-		self.events[event] = handler
-		self.events:RegisterEvent(event)
+		events[event] = handler
 	else
 		if type(current) == 'function' then
 			if current ~= handler then
-				self.events[event] = setmetatable({current, handler}, event_meta)
+				events[event] = setmetatable({current, handler}, event_meta)
 			end
 		else
 			for _, func in next, current do
 				if func == handler then return end
 			end
 			current[#current + 1] = handler
+		end
+	end
+
+	local isRegistered, unit = events:IsEventRegistered(event)
+
+	if not isRegistered or not isUnitEvent and unit then
+		if isUnitEvent then
+			events:RegisterUnitEvent(event, 'player')
+		else
+			events:RegisterEvent(event)
 		end
 	end
 end
@@ -190,6 +202,7 @@ function ns.FoundSpell(id, name, bookType)
 
 	if isNew then
 		lib.callbacks:Fire('LibSpellbook_Spell_Added', id, bookType, name)
+		if bookType == 'azerite' then print('Added', id, name) end
 	end
 
 	return isNew
@@ -207,4 +220,5 @@ function ns.CleanUp(id)
 	lastSeen[id] = nil
 
 	lib.callbacks:Fire('LibSpellbook_Spell_Removed', id, bookType, name)
+	if bookType == 'azerite' then print('Removed', id, name) end
 end
