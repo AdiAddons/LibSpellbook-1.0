@@ -80,7 +80,11 @@ local function ScanAzeriteItem(event, itemLocation)
 		return false
 	end
 
-	return UpdateActivePowers(itemLocation)
+	local changed = UpdateActivePowers(itemLocation)
+
+	if changed and event == 'AZERITE_EMPOWERED_ITEM_SELECTION_UPDATED' then
+		lib.callbacks:Fire('LibSpellbook_Spells_Changed')
+	end
 end
 
 local function ScanEquipmentSlot(event, slot, isEmpty, suppressAllChangedMessage)
