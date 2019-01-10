@@ -202,7 +202,6 @@ function ns.FoundSpell(id, name, bookType)
 
 	if isNew then
 		lib.callbacks:Fire('LibSpellbook_Spell_Added', id, bookType, name)
-		if bookType == 'azerite' then print('Added', id, name) end
 	end
 
 	return isNew
@@ -220,5 +219,4 @@ function ns.CleanUp(id)
 	lastSeen[id] = nil
 
 	lib.callbacks:Fire('LibSpellbook_Spell_Removed', id, bookType, name)
-	if bookType == 'azerite' then print('Removed', id, name) end
 end
