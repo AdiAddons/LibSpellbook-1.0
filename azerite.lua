@@ -94,6 +94,7 @@ local function ScanEquipmentSlot(event, slot, isEmpty, suppressAllChangedMessage
 
 	if azeriteSlots[slot] then
 		local itemLink = GetInventoryItemLink('player', slot)
+		itemLink = itemLink and itemLink:match('item:%d+:+%d+:%d+:(.-)|h')
 		if isEmpty or itemLink ~= azeriteSlots[slot] then
 			azeriteSlots[slot] = itemLink or true
 			changed = RemoveSpell(slot)
