@@ -209,7 +209,7 @@ local function ScanSpellbook(bookType, numSpells, offset)
 	return changed
 end
 
-local function ScanSpells()
+local function ScanSpells(event)
 	local changed = false
 	ns.generation = ns.generation + 1
 
@@ -245,6 +245,10 @@ local function ScanSpells()
 
 	if changed then
 		lib.callbacks:Fire('LibSpellbook_Spells_Changed')
+	end
+
+	if event == 'PLAYER_ENTERING_WORLD' then
+		lib:UnregisterEvent(event, ScanSpells)
 	end
 end
 
