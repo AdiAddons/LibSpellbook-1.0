@@ -90,21 +90,26 @@ end
 -- @param  string    the event for which the handler is to be unregistered
 -- @param  function  the event handler to be unregistered
 function lib:UnregisterEvent(event, handler)
-	local current = self.events[event]
 	if not handler then return end
 
-	if current == handler then
-		self.events:UnregisterEvent(event)
-		self.events[event] = nil
-	else
+	local current = self.events[event]
+	local cleanUp = false
+
+	if (type(current) == 'table') then
 		for i, func in next, current do
 			if func == handler then
-				table.remove(current, i)
+				current[i] = nil
+				break
 			end
 		end
-		if #current == 1 then
-			self.events[event] = current[1]
+		if not next(current) then
+			cleanUp = true
 		end
+	end
+
+	if cleanUp or current == handler then
+		self.events:UnregisterEvent(event)
+		self.events[event] = nil
 	end
 end
 
