@@ -117,7 +117,7 @@ local function ScanEquipmentSlot(event, slot, isEmpty, suppressAllChangedMessage
 end
 
 local function ScanAzeriteSpells(event)
-	if not playerSpecID or event == 'PLAYER_TALENT_UPDATE' then
+	if not playerSpecID or event == 'PLAYER_SPECIALIZATION_CHANGED' then
 		playerSpecID = GetSpecializationInfo(GetSpecialization()) or 0
 		if playerSpecID == 0 then return end
 	end
@@ -140,4 +140,4 @@ end
 lib:RegisterEvent('AZERITE_EMPOWERED_ITEM_SELECTION_UPDATED', ScanAzeriteItem)
 lib:RegisterEvent('PLAYER_ENTERING_WORLD', ScanAzeriteSpells)
 lib:RegisterEvent('PLAYER_EQUIPMENT_CHANGED', ScanEquipmentSlot)
-lib:RegisterEvent('PLAYER_TALENT_UPDATE', ScanAzeriteSpells)
+lib:RegisterEvent('PLAYER_SPECIALIZATION_CHANGED', ScanAzeriteSpells, true)
