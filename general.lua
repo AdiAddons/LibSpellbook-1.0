@@ -132,6 +132,22 @@ local function ScanRanks()
 	return changed
 end
 
+local function ScanCovenantAbilities()
+	local changed = false
+
+	local spells = {
+		'Covenant Ability', -- 313347
+		'Signature Ability', -- 326526
+	}
+
+	for _, spell in next, spells do
+		local name, _, _, _, _, _, id = GetSpellInfo(spell)
+		changed = FoundSpell(id, name, 'covenant') or changed
+	end
+
+	return changed
+end
+
 local function ScanFlyout(flyoutId, bookType)
 	local _, _, numSlots, isKnown = GetFlyoutInfo(flyoutId)
 
@@ -233,6 +249,7 @@ local function ScanSpells(event)
 	end
 
 	changed = ScanPvpTalents() or changed
+	changed = ScanCovenantAbilities() or changed
 
 	local current = ns.generation
 	for id, generation in next, ns.spells.lastSeen do
