@@ -8,10 +8,11 @@ local FoundSpell = ns.FoundSpell
 local CleanUp    = ns.CleanUp
 
 local supportedBookTypes = {
-	spell  = true,
-	pet    = true,
-	talent = true,
-	pvp    = true,
+	covenant = true,
+	pet      = true,
+	pvp      = true,
+	spell    = true,
+	talent   = true,
 }
 
 local playerClass
