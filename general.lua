@@ -232,7 +232,7 @@ local function ScanSpells(event)
 	local changed = false
 	ns.generation = ns.generation + 1
 
-	for tab = 1, 2 do
+	for tab = 1, 3 do
 		local _, _, offset, numSpells = GetSpellTabInfo(tab)
 		changed = ScanSpellbook('spell', numSpells, offset) or changed
 	end
