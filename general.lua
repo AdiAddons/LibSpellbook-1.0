@@ -523,13 +523,15 @@ local function ScanCovenantAbilities()
 	local changed = false
 
 	local spells = {
-		'Covenant Ability', -- 313347
-		'Signature Ability', -- 326526
+		[313347] = GetSpellInfo(313347), -- Covenant Ability
+		[326526] = GetSpellInfo(326526), -- Signature Ability
 	}
 
-	for _, spell in next, spells do
-		local name, _, _, _, _, _, id = GetSpellInfo(spell)
-		changed = FoundSpell(id, name, 'covenant') or changed
+	for id, name in next, spells do
+		local newName, _, _, _, _, _, newID = GetSpellInfo(name)
+		if newID ~= id then
+			changed = FoundSpell(newID, newName, 'covenant') or changed
+		end
 	end
 
 	return changed
