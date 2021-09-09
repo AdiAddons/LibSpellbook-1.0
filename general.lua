@@ -500,7 +500,7 @@ local spellUpgrades = {
 
 local function ScanUpgrades()
 	playerClass = playerClass or select(2, UnitClass('player'))
-	local upgrades = spellUpgrades[playerClass][5] or {}
+	local upgrades = CopyTable(spellUpgrades[playerClass][5] or {})
 	local spec = GetSpecialization()
 
 	if spec > 0 and spec < 5 then
