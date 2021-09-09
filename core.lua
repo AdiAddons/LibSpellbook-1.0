@@ -2,7 +2,7 @@ local _, ns = ...
 ns['__LibSpellbook-1.0'] = {}
 ns = ns['__LibSpellbook-1.0']
 
-local MAJOR, MINOR = 'LibSpellbook-1.0', 27
+local MAJOR, MINOR = 'LibSpellbook-1.0', 28
 assert(LibStub, MAJOR .. ' requires LibStub.')
 
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
