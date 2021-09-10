@@ -55,8 +55,13 @@ local function AddSpell(slot, id)
 end
 
 local function UpdateActivePowers(itemLocation)
+	local heartLocation = C_AzeriteItem.FindActiveAzeriteItem()
+
+	-- the player has not unlocked Heart of Azeroth but has azerite items
+	if not heartLocation then return false end
+
 	local changed = false
-	local azeriteLevel = C_AzeriteItem.GetPowerLevel(C_AzeriteItem.FindActiveAzeriteItem())
+	local azeriteLevel = C_AzeriteItem.GetPowerLevel(heartLocation)
 	local tiers = C_AzeriteEmpoweredItem.GetAllTierInfo(itemLocation)
 
 	for tier, info in next, tiers do
