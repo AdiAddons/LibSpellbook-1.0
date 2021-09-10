@@ -644,10 +644,10 @@ local function ScanSpells(event)
 	local current = ns.generation
 	for id, generation in next, ns.spells.lastSeen do
 		if generation < current then
-			changed = true
 			local bookType = ns.spells.book[id]
 			if supportedBookTypes[bookType] and (not inCombat or bookType ~= 'talent') then
 				CleanUp(id)
+				changed = true
 			end
 		end
 	end
