@@ -555,22 +555,6 @@ local function ScanFlyout(flyoutId, bookType)
 	return changed
 end
 
-local function ScanTalents()
-	local changed = false
-	local spec = GetActiveSpecGroup()
-	for tier = 1, MAX_TALENT_TIERS do
-		for column = 1, NUM_TALENT_COLUMNS do
-			local _, _, _, _, _, spellId, _, _, _, isKnown, isGrantedByAura = GetTalentInfo(tier, column, spec)
-			if isKnown or isGrantedByAura then
-				local name = GetSpellInfo(spellId)
-				changed = FoundSpell(spellId, name, 'talent') or changed
-			end
-		end
-	end
-
-	return changed
-end
-
 local function ScanPvpTalents()
 	local changed = false
 	if C_PvP.IsWarModeDesired() then
@@ -634,9 +618,6 @@ local function ScanSpells(event)
 	end
 
 	local inCombat = InCombatLockdown()
-	if not inCombat then
-		changed = ScanTalents() or changed
-	end
 
 	changed = ScanPvpTalents() or changed
 	changed = ScanCovenantAbilities() or changed
