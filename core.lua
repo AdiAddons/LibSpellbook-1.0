@@ -2,7 +2,7 @@ local _, ns = ...
 ns['__LibSpellbook-1.0'] = {}
 ns = ns['__LibSpellbook-1.0']
 
-local MAJOR, MINOR = 'LibSpellbook-1.0', 28
+local MAJOR, MINOR = 'LibSpellbook-1.0', 29
 assert(LibStub, MAJOR .. ' requires LibStub.')
 
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
@@ -166,6 +166,9 @@ function lib:IsKnown(spell, bookType)
 	if id and byId[id] then
 		return not bookType or bookType == book[id]
 	end
+
+	-- fallback for class traits (we might dump this whole thing after all)
+	return IsPlayerSpell(spell)
 end
 
 local function iterator(bookType, id)
@@ -208,6 +211,7 @@ function ns.FoundSpell(id, name, bookType)
 	lastSeen[id] = ns.generation
 
 	if isNew then
+		-- print('|cff00ff00LSB: spell added|r', id, name, bookType)
 		lib.callbacks:Fire('LibSpellbook_Spell_Added', id, bookType, name)
 	end
 
@@ -225,5 +229,6 @@ function ns.CleanUp(id)
 	book[id] = nil
 	lastSeen[id] = nil
 
+	-- print('|cffff0000LSB: spell removed|r', id, name, bookType)
 	lib.callbacks:Fire('LibSpellbook_Spell_Removed', id, bookType, name)
 end

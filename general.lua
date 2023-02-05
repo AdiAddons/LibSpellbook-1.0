@@ -155,6 +155,7 @@ local spellUpgrades = {
 		["patch"] = "9.0.2",
 		["build"] = "36165",
 	},
+	EVOKER = {},
 	HUNTER = {
 		{
 			231548, -- Bestial Wrath (Rank 2) Beast Mastery 34
