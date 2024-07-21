@@ -51,27 +51,22 @@ local function ScanSpellbook(bookType, numSpells, offset)
 	offset = offset or 0
 
 	for i = offset + 1, offset + numSpells do
-		local spellType, actionId = GetSpellBookItemInfo(i, bookType)
-		if spellType == 'SPELL' then
-			local name, _, spellId = GetSpellBookItemName(i, bookType)
-			changed = FoundSpell(spellId, name, bookType) or changed
+		local info = C_SpellBook.GetSpellBookItemInfo(i, bookType)
+		local itemType = info.itemType
+		if itemType == Enum.SpellBookItemType.Spell then
+			changed = FoundSpell(info.actionID, info.name, bookType) or changed
 
-			local link = GetSpellLink(i, bookType)
-			if link then
-				local id, n = link:match('spell:(%d+):%d+\124h%[(.+)%]')
-				id = tonumber(id)
-				if id ~= spellId then
-					-- TODO: check this
-					-- print('Differing ids from link and spellbook', id, spellId)
-					changed = FoundSpell(id, n, bookType) or changed
-				end
+			if (info.spellID and info.spellID ~= info.actionID) then
+				print('Action and Spell do not match:', info.actionID, info.spellID, i)
+				changed = FoundSpell(info.spellID, C_Spell.GetSpellName(info.spellID), bookType) or changed
 			end
-		elseif spellType == 'FLYOUT' then
-			changed = ScanFlyout(actionId, bookType)
-		elseif spellType == 'PETACTION' then
-			local name, _, spellId = GetSpellBookItemName(i, bookType)
-			changed = FoundSpell(spellId, name, bookType) or changed
-		elseif not spellType or spellType == 'FUTURESPELL' then
+		elseif itemType == Enum.SpellBookItemType.Flyout then
+			changed = ScanFlyout(info.actionID, bookType)
+		elseif itemType == Enum.SpellBookItemType.PetAction then
+			if info.spellID then
+				changed = FoundSpell(info.spellID, info.name, bookType) or changed
+			end
+		else
 			break
 		end
 	end
@@ -83,14 +78,17 @@ local function ScanSpells(event)
 	local changed = false
 	ns.generation = ns.generation + 1
 
-	for tab = 1, 3 do
-		local _, _, offset, numSpells = GetSpellTabInfo(tab)
-		changed = ScanSpellbook('spell', numSpells, offset) or changed
+	for skillLine = 1, C_SpellBook.GetNumSpellBookSkillLines() do
+		local skillLineInfo = C_SpellBook.GetSpellBookSkillLineInfo(skillLine)
+
+		if not skillLineInfo.offspecID then
+			changed = ScanSpellbook(Enum.SpellBookSpellBank.Player, skillLineInfo.numSpellBookItems, skillLineInfo.itemIndexOffset) or changed
+		end
 	end
 
-	local numPetSpells = HasPetSpells()
+	local numPetSpells = C_SpellBook.HasPetSpells()
 	if numPetSpells then
-		changed = ScanSpellbook('pet', numPetSpells) or changed
+		changed = ScanSpellbook(Enum.SpellBookSpellBank.Pet, numPetSpells) or changed
 	end
 
 	local inCombat = InCombatLockdown()
