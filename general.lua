@@ -57,7 +57,6 @@ local function ScanSpellbook(bookType, numSpells, offset)
 			changed = FoundSpell(info.actionID, info.name, bookType) or changed
 
 			if (info.spellID and info.spellID ~= info.actionID) then
-				print('Action and Spell do not match:', info.actionID, info.spellID, i)
 				changed = FoundSpell(info.spellID, C_Spell.GetSpellName(info.spellID), bookType) or changed
 			end
 		elseif itemType == Enum.SpellBookItemType.Flyout then
